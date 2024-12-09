@@ -1,4 +1,3 @@
-from utils import clean
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
@@ -29,7 +28,7 @@ def fetch(category: str, max_results: int = 5, start: int = 0):
     # Convert data formats and store it in a list
     papers = []
     for entry in soup.find_all('entry'):
-        authors = ','.join(clean(name.string)
+        authors = ','.join(name.string
                            for author in entry.find_all('author')
                            for name in author.find_all('name')
                            if name.string is not None)
@@ -37,17 +36,25 @@ def fetch(category: str, max_results: int = 5, start: int = 0):
         # Lấy tất cả các categories
         categories = ','.join(cat['term'] for cat in entry.find_all('category'))
 
+        # Lấy thông tin nơi xuất bản từ <arxiv:comment>
+        comment_info = entry.find('arxiv:comment')
+        comment = comment_info.string.strip() if comment_info else 'Not available'
+
         papers.append({
             'paper_id': entry.id.string,
             'authors': authors,
             'updated': datetime.fromisoformat(entry.updated.string[:-1]),
             'published': datetime.fromisoformat(entry.published.string[:-1]),
-            'title': clean(entry.title.string),
-            'abstract': clean(entry.summary.string),
-            'categories': categories
+            'title': entry.title.string,
+            'abstract': entry.summary.string,
+            'categories': categories,
+            'comment': comment  # Thêm thông tin nơi xuất bản vào kết quả
         })
 
     return papers, int(soup.find('opensearch:totalResults').string)
+
+
+
 
 def scrape(categories: list, max_results: int = 100, max_retries: int = 5):
     ''' Scrape papers for given categories and save to CSV. '''
@@ -117,6 +124,7 @@ if __name__ == '__main__':
                      'cs.GT', 'cs.HC', 'cs.IR', 'cs.IT', 'cs.LG', 'cs.LO', 'cs.MA', 'cs.MM', 'cs.MS',
                      'cs.NA', 'cs.NE', 'cs.NI', 'cs.OH', 'cs.OS', 'cs.PF', 'cs.PL', 'cs.RO', 'cs.SC',
                      'cs.SD', 'cs.SE', 'cs.SI', 'cs.SY']
+
     
     # Scrape data for all categories
     scrape(categories=cs_categories, max_results=500)  # Adjust max_results as needed
