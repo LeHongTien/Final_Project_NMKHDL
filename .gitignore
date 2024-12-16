@@ -1,2 +1,6 @@
 #Bỏ qua thư mục môt trường ảo
 venv/
+
+# Bỏ qua các file csv
+*.csv
+
