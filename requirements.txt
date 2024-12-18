@@ -3,3 +3,9 @@ pandas
 scikit-learn
 matplotlib
 seaborn
+transformers
+evaluate
+sentencepiece
+accelerate
+protobuf
+torch
